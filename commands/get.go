@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/gamelife2025/easytime/pkg/utils"
 	"github.com/spf13/cobra"
-	"github.com/zqb7/easytime/pkg/utils"
 )
 
 func init() {

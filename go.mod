@@ -1,4 +1,4 @@
-module github.com/zqb7/easytime
+module github.com/gamelife2025/easytime
 
 go 1.20
 

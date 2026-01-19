@@ -2,7 +2,7 @@
 
 ## install
 ```
-go install github.com/zqb7/easytime@latest
+go install github.com/gamelife2025/easytime@latest
 ```
 ## Usage
 ```

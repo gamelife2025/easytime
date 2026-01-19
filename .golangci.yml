@@ -1,0 +1,36 @@
+run:
+  timeout: 5m
+  tests: true
+
+linters:
+  enable:
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - typecheck
+    - unused
+    - errcheck
+    - gofmt
+    - goimports
+    - revive
+    - misspell
+
+linters-settings:
+  revive:
+    ignore-generated-header: true
+    rules:
+      - name: blank-imports
+      - name: context-as-argument
+      - name: context-keys-type
+      - name: error-return
+      - name: error-strings
+      - name: error-naming
+      - name: exported
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - errcheck
+        - gosec
