@@ -18,5 +18,10 @@ easytime now
 # weekday: 1
 # zero_timestamp: 1706457600
 ```
+## web
+```
+easytime web --port 8000
+```
+![easytime web interface](./image.png)
 ## 参考实现
 - github.com/arrow-py/arrow

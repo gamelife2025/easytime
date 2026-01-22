@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{{.Title}} - 时间转换工具</title>
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+
+		body {
+			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			min-height: 100vh;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			padding: 20px;
+		}
+
+		.container {
+			background: white;
+			border-radius: 16px;
+			box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+			max-width: 500px;
+			width: 100%;
+			overflow: hidden;
+		}
+
+		.header {
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			color: white;
+			padding: 40px 30px;
+			text-align: center;
+		}
+
+		.header h1 {
+			font-size: 28px;
+			margin-bottom: 8px;
+			font-weight: 600;
+		}
+
+		.header p {
+			font-size: 14px;
+			opacity: 0.9;
+		}
+
+		.content {
+			padding: 30px;
+		}
+
+		.form-group {
+			margin-bottom: 24px;
+		}
+
+		label {
+			display: block;
+			margin-bottom: 8px;
+			font-size: 14px;
+			font-weight: 500;
+			color: #333;
+		}
+
+		input, select {
+			width: 100%;
+			padding: 12px 16px;
+			border: 1px solid #e0e0e0;
+			border-radius: 8px;
+			font-size: 14px;
+			transition: all 0.3s ease;
+			font-family: inherit;
+		}
+
+		input:focus, select:focus {
+			outline: none;
+			border-color: #667eea;
+			box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+		}
+
+		.button-group {
+			display: flex;
+			gap: 12px;
+		}
+
+		button {
+			flex: 1;
+			padding: 12px 24px;
+			border: none;
+			border-radius: 8px;
+			font-size: 14px;
+			font-weight: 600;
+			cursor: pointer;
+			transition: all 0.3s ease;
+		}
+
+		.btn-convert {
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			color: white;
+		}
+
+		.btn-convert:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+		}
+
+		.btn-convert:active {
+			transform: translateY(0);
+		}
+
+		.btn-now {
+			background: #f0f0f0;
+			color: #333;
+		}
+
+		.btn-now:hover {
+			background: #e8e8e8;
+		}
+
+		.result {
+			background: #f8f9fa;
+			border-radius: 8px;
+			padding: 20px;
+			margin-top: 24px;
+			display: none;
+		}
+
+		.result.show {
+			display: block;
+			animation: slideIn 0.3s ease;
+		}
+
+		@keyframes slideIn {
+			from {
+				opacity: 0;
+				transform: translateY(-10px);
+			}
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+
+		.result-item {
+			display: grid;
+			grid-template-columns: 120px 1fr auto;
+			gap: 16px;
+			align-items: center;
+			padding: 12px 0;
+			border-bottom: 1px solid #e0e0e0;
+			font-size: 14px;
+		}
+
+		.result-item:last-child {
+			border-bottom: none;
+		}
+
+		.result-label {
+			color: #666;
+			font-weight: 500;
+		}
+
+		.result-value {
+			color: #333;
+			font-family: 'Monaco', 'Courier New', monospace;
+			font-size: 13px;
+			word-break: break-all;
+			text-align: right;
+		}
+
+		.copy-btn {
+			background: none;
+			border: none;
+			color: #667eea;
+			cursor: pointer;
+			font-size: 12px;
+			padding: 4px 8px;
+			min-width: 40px;
+			text-align: center;
+			transition: color 0.3s ease;
+			white-space: nowrap;
+		}
+
+		.copy-btn:hover {
+			color: #764ba2;
+		}
+
+		.history-section {
+			margin-top: 24px;
+			padding-top: 24px;
+			border-top: 1px solid #e0e0e0;
+		}
+
+		.history-title {
+			font-size: 14px;
+			font-weight: 600;
+			color: #333;
+			margin-bottom: 12px;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+		}
+
+		.history-list {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+			max-height: 200px;
+			overflow-y: auto;
+			padding-right: 4px;
+		}
+
+		.history-list::-webkit-scrollbar {
+			width: 6px;
+		}
+
+		.history-list::-webkit-scrollbar-track {
+			background: transparent;
+		}
+
+		.history-list::-webkit-scrollbar-thumb {
+			background: #ddd;
+			border-radius: 3px;
+		}
+
+		.history-list::-webkit-scrollbar-thumb:hover {
+			background: #bbb;
+		}
+
+		.history-item {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			padding: 10px 12px;
+			background: #f8f9fa;
+			border-radius: 6px;
+			cursor: pointer;
+			transition: all 0.2s ease;
+			font-size: 13px;
+		}
+
+		.history-item:hover {
+			background: #e8edf5;
+		}
+
+		.history-content {
+			flex: 1;
+			min-width: 0;
+		}
+
+		.history-input {
+			color: #333;
+			font-weight: 500;
+			font-family: 'Monaco', 'Courier New', monospace;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		.history-timezone {
+			color: #999;
+			font-size: 12px;
+			margin-top: 2px;
+		}
+
+		.history-additional {
+			color: #667eea;
+			font-size: 11px;
+			margin-top: 4px;
+			font-family: 'Monaco', 'Courier New', monospace;
+			font-weight: 500;
+		}
+
+		.history-empty {
+			text-align: center;
+			color: #999;
+			padding: 20px;
+			font-size: 13px;
+		}
+
+		.error {
+			background: #fee;
+			color: #c33;
+			padding: 12px 16px;
+			border-radius: 8px;
+			margin-top: 16px;
+			font-size: 13px;
+			display: none;
+		}
+
+		.error.show {
+			display: block;
+		}
+
+		.success-msg {
+			position: fixed;
+			top: 20px;
+			right: 20px;
+			background: #4caf50;
+			color: white;
+			padding: 12px 20px;
+			border-radius: 8px;
+			font-size: 13px;
+			opacity: 0;
+			transition: opacity 0.3s ease;
+		}
+
+		.success-msg.show {
+			opacity: 1;
+		}
+
+		.timezone-list {
+			max-height: 200px;
+			overflow-y: auto;
+		}
+
+		.loading {
+			display: none;
+			text-align: center;
+		}
+
+		.spinner {
+			display: inline-block;
+			width: 16px;
+			height: 16px;
+			border: 2px solid #f3f3f3;
+			border-top: 2px solid #667eea;
+			border-radius: 50%;
+			animation: spin 0.8s linear infinite;
+		}
+
+		@keyframes spin {
+			0% { transform: rotate(0deg); }
+			100% { transform: rotate(360deg); }
+		}
+
+		@media (max-width: 480px) {
+			.header {
+				padding: 30px 20px;
+			}
+
+			.header h1 {
+				font-size: 24px;
+			}
+
+			.content {
+				padding: 20px;
+			}
+
+			.result-item {
+				grid-template-columns: 1fr;
+				gap: 8px;
+			}
+
+			.result-label {
+				display: block;
+			}
+
+			.result-value {
+				text-align: left;
+				word-break: break-all;
+			}
+
+			.copy-btn {
+				display: none;
+			}
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<div class="header">
+			<h1>⏰ easytime</h1>
+		</div>
+
+		<div class="content">
+			<form id="convertForm">
+				<div class="form-group">
+					<label for="input">输入时间或时间戳</label>
+					<input 
+						type="text" 
+						id="input" 
+						placeholder="例如：2026-01-22 或 1769011200"
+						autocomplete="off"
+					>
+				</div>
+
+				<div class="form-group">
+					<label for="timezone">时区</label>
+					<select id="timezone">
+						<option value="Local">系统时区</option>
+						<option value="UTC">UTC (UTC+0)</option>
+						<option value="Asia/Shanghai">亚洲/上海 (UTC+8)</option>
+						<option value="Asia/Tokyo">亚洲/东京 (UTC+9)</option>
+						<option value="Asia/Hong_Kong">亚洲/香港 (UTC+8)</option>
+						<option value="Asia/Jakarta">亚洲/雅加达 (UTC+7)</option>
+						<option value="Asia/Singapore">亚洲/新加坡 (UTC+8)</option>
+						<option value="Asia/Bangkok">亚洲/曼谷 (UTC+7)</option>
+						<option value="Australia/Sydney">澳洲/悉尼 (UTC+11)</option>
+						<option value="America/New_York">美洲/纽约 (UTC-5)</option>
+						<option value="America/Los_Angeles">美洲/洛杉矶 (UTC-8)</option>
+						<option value="America/Chicago">美洲/芝加哥 (UTC-6)</option>
+						<option value="Europe/London">欧洲/伦敦 (UTC+0)</option>
+						<option value="Europe/Paris">欧洲/巴黎 (UTC+1)</option>
+						<option value="Europe/Berlin">欧洲/柏林 (UTC+1)</option>
+						<option value="Europe/Moscow">欧洲/莫斯科 (UTC+3)</option>
+						<option value="Africa/Cairo">非洲/开罗 (UTC+2)</option>
+						<option value="Africa/Johannesburg">非洲/约翰内斯堡 (UTC+2)</option>
+						<option value="Indian/Dubai">印度/迪拜 (UTC+4)</option>
+						<option value="Pacific/Auckland">太平洋/奥克兰 (UTC+13)</option>
+					</select>
+				</div>
+
+				<div class="button-group">
+					<button type="submit" class="btn-convert">转换</button>
+					<button type="button" class="btn-now" id="nowBtn">当前时间</button>
+				</div>
+
+				<div class="error" id="error"></div>
+			</form>
+
+			<div class="loading" id="loading">
+				<div class="spinner"></div>
+			</div>
+
+			<div class="result" id="result">
+				<div class="result-item">
+					<span class="result-label">ISO 8601</span>
+					<span class="result-value" id="iso8601"></span>
+					<button class="copy-btn" onclick="copyToClipboard('iso8601')">复制</button>
+				</div>
+				<div class="result-item">
+					<span class="result-label">日期</span>
+					<span class="result-value" id="date"></span>
+					<button class="copy-btn" onclick="copyToClipboard('date')">复制</button>
+				</div>
+				<div class="result-item">
+					<span class="result-label">时间</span>
+					<span class="result-value" id="time"></span>
+					<button class="copy-btn" onclick="copyToClipboard('time')">复制</button>
+				</div>
+				<div class="result-item">
+					<span class="result-label">时间戳 (秒)</span>
+					<span class="result-value" id="timestamp"></span>
+					<button class="copy-btn" onclick="copyToClipboard('timestamp')">复制</button>
+				</div>
+				<div class="result-item">
+					<span class="result-label">时间戳 (毫秒)</span>
+					<span class="result-value" id="timestamp_ms"></span>
+					<button class="copy-btn" onclick="copyToClipboard('timestamp_ms')">复制</button>
+				</div>
+				<div class="result-item">
+					<span class="result-label">时间戳 (微秒)</span>
+					<span class="result-value" id="timestamp_us"></span>
+					<button class="copy-btn" onclick="copyToClipboard('timestamp_us')">复制</button>
+				</div>
+				<div class="result-item">
+					<span class="result-label">星期</span>
+					<span class="result-value" id="weekday"></span>
+				</div>
+				<div class="result-item">
+					<span class="result-label">零点时间戳</span>
+					<span class="result-value" id="zero_timestamp"></span>
+					<button class="copy-btn" onclick="copyToClipboard('zero_timestamp')">复制</button>
+				</div>
+				<div class="result-item">
+					<span class="result-label">时区</span>
+					<span class="result-value" id="timezone_info"></span>
+					<button class="copy-btn" onclick="copyToClipboard('timezone_info')">复制</button>
+				</div>
+
+				<div class="history-section">
+					<div class="history-title">
+						📝 历史记录
+						<button type="button" id="clearHistoryBtn" class="copy-btn" style="color: #999;">清空</button>
+					</div>
+					<div class="history-list" id="historyList">
+						<div class="history-empty">暂无记录</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="success-msg" id="successMsg">已复制到剪贴板</div>
+
+	<script>
+		const form = document.getElementById('convertForm');
+		const input = document.getElementById('input');
+		const timezone = document.getElementById('timezone');
+		const result = document.getElementById('result');
+		const error = document.getElementById('error');
+		const loading = document.getElementById('loading');
+		const nowBtn = document.getElementById('nowBtn');
+		const successMsg = document.getElementById('successMsg');
+		const historyList = document.getElementById('historyList');
+		const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+
+		form.addEventListener('submit', async (e) => {
+			e.preventDefault();
+			await convert();
+		});
+
+		nowBtn.addEventListener('click', async () => {
+			input.value = '';
+			await fetchNow();
+		});
+
+		clearHistoryBtn.addEventListener('click', () => {
+			clearHistory();
+		});
+
+		input.addEventListener('keypress', (e) => {
+			if (e.key === 'Enter') {
+				form.dispatchEvent(new Event('submit'));
+			}
+		});
+
+		async function convert() {
+			const inputValue = input.value.trim();
+			if (!inputValue) {
+				showError('请输入时间或时间戳');
+				return;
+			}
+
+			showLoading(true);
+			hideError();
+			result.classList.remove('show');
+
+			try {
+				const response = await fetch('/api/convert', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({
+						input: inputValue,
+						timezone: timezone.value,
+					}),
+				});
+
+				const data = await response.json();
+
+				if (data.success) {
+					displayResult(data.data);
+					// 保存到历史记录
+					addToHistory(inputValue, timezone.value);
+					loadHistory();
+				} else {
+					showError(data.error || '转换失败');
+				}
+			} catch (err) {
+				showError('请求失败: ' + err.message);
+			} finally {
+				showLoading(false);
+			}
+		}
+
+		async function fetchNow() {
+			showLoading(true);
+			hideError();
+			result.classList.remove('show');
+
+			try {
+				const response = await fetch('/api/now?timezone=' + encodeURIComponent(timezone.value));
+				const data = await response.json();
+
+				if (data.success) {
+					displayResult(data.data);
+				} else {
+					showError(data.error || '获取时间失败');
+				}
+			} catch (err) {
+				showError('请求失败: ' + err.message);
+			} finally {
+				showLoading(false);
+			}
+		}
+
+		function displayResult(data) {
+			document.getElementById('iso8601').textContent = data.iso8601;
+			document.getElementById('date').textContent = data.date;
+			document.getElementById('time').textContent = data.time;
+			document.getElementById('timestamp').textContent = data.timestamp;
+			document.getElementById('timestamp_ms').textContent = data.timestamp_ms;
+			document.getElementById('timestamp_us').textContent = data.timestamp_us;
+			document.getElementById('weekday').textContent = data.weekday;
+			document.getElementById('zero_timestamp').textContent = data.zero_timestamp;
+			document.getElementById('timezone_info').textContent = data.timezone;
+
+			result.classList.add('show');
+		}
+
+		async function loadHistory() {
+			try {
+				// 从localStorage获取历史记录
+				const savedHistory = localStorage.getItem('easytime_history');
+				let history = [];
+				if (savedHistory) {
+					try {
+						const localHistory = JSON.parse(savedHistory);
+						if (Array.isArray(localHistory)) {
+							history = localHistory;
+						}
+					} catch (e) {
+						console.error('解析本地历史记录失败:', e);
+					}
+				}
+
+				if (!history || history.length === 0) {
+					historyList.innerHTML = '<div class="history-empty">暂无记录</div>';
+					return;
+				}
+
+				historyList.innerHTML = history.map((item, index) => {
+					let additionalInfo = '';
+					if (item.timestamp) {
+						// 输入是日期，显示时间戳
+						additionalInfo = '<div class="history-additional">' + item.timestamp + '</div>';
+					} else if (item.date) {
+						// 输入是时间戳，显示日期
+						additionalInfo = '<div class="history-additional">' + item.date + '</div>';
+					}
+					return '<div class="history-item" onclick="useHistory(' + JSON.stringify(item.input) + ', ' + JSON.stringify(item.timezone) + ')"><div class="history-content"><div class="history-input">' + escapeHtml(item.input) + '</div><div class="history-timezone">' + escapeHtml(item.timezone) + '</div>' + additionalInfo + '</div></div>';
+				}).join('');
+
+				// 如果有历史记录，默认显示结果区域
+				if (history.length > 0) {
+					result.classList.add('show');
+				}
+			} catch (err) {
+				console.error('加载历史记录失败:', err);
+			}
+		}
+
+		function saveHistoryToStorage(history) {
+			const historyToSave = history.slice(0, 10);
+			localStorage.setItem('easytime_history', JSON.stringify(historyToSave));
+		}
+
+		function useHistory(historyInput, historyTimezone) {
+			input.value = historyInput;
+			timezone.value = historyTimezone;
+			form.dispatchEvent(new Event('submit'));
+		}
+
+		async function addToHistory(inputStr, timezoneStr) {
+			const savedHistory = localStorage.getItem('easytime_history');
+			let history = [];
+			if (savedHistory) {
+				try {
+					const parsed = JSON.parse(savedHistory);
+					if (Array.isArray(parsed)) {
+						history = parsed;
+					}
+				} catch (e) {
+					console.error('解析历史记录失败:', e);
+				}
+			}
+
+			const existingIndex = history.findIndex(item => item.input === inputStr && item.timezone === timezoneStr);
+			if (existingIndex >= 0) {
+				history.splice(existingIndex, 1);
+			}
+
+			let additionalData = {};
+			try {
+				const response = await fetch('/api/convert', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({
+						input: inputStr,
+						timezone: timezoneStr,
+					}),
+				});
+
+				const data = await response.json();
+				if (data.success && data.data) {
+					const timeInfo = data.data;
+					// 判断输入是日期还是时间戳
+					// 如果输入包含数字且全是数字且长度较长，可能是时间戳
+					const isNumeric = /^\d+$/.test(inputStr.trim());
+					const isLongNumber = isNumeric && inputStr.trim().length >= 10;
+					
+					if (isLongNumber) {
+						// 输入是时间戳，显示日期
+						additionalData.date = timeInfo.date;
+					} else {
+						// 输入是日期，显示时间戳
+						additionalData.timestamp = timeInfo.timestamp;
+					}
+				}
+			} catch (e) {
+				console.error('获取转换结果失败:', e);
+			}
+
+			// 添加到前面
+			history.unshift({
+				input: inputStr,
+				timezone: timezoneStr,
+				...additionalData
+			});
+
+			// 只保留最近10条
+			if (history.length > 10) {
+				history = history.slice(0, 10);
+			}
+
+			localStorage.setItem('easytime_history', JSON.stringify(history));
+		}
+		function clearHistory() {
+			localStorage.removeItem('easytime_history');
+			historyList.innerHTML = '<div class="history-empty">暂无记录</div>';
+		}
+
+		function showError(msg) {
+			error.textContent = msg;
+			error.classList.add('show');
+		}
+
+		function hideError() {
+			error.classList.remove('show');
+		}
+
+		function showLoading(show) {
+			loading.style.display = show ? 'block' : 'none';
+		}
+
+		function copyToClipboard(id) {
+			const element = document.getElementById(id);
+			const text = element.textContent;
+
+			navigator.clipboard.writeText(text).then(() => {
+				successMsg.classList.add('show');
+				setTimeout(() => {
+					successMsg.classList.remove('show');
+				}, 2000);
+			}).catch(err => {
+				console.error('复制失败:', err);
+			});
+		}
+
+		function escapeHtml(text) {
+			const map = {
+				'&': '&amp;',
+				'<': '&lt;',
+				'>': '&gt;',
+				'"': '&quot;',
+				"'": '&#039;'
+			};
+			return text.replace(/[&<>"']/g, m => map[m]);
+		}
+
+		// Auto focus input and load history on page load
+		window.addEventListener('DOMContentLoaded', () => {
+			// 设置默认时区为浏览器本地时区
+			const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+			timezone.value = browserTimezone;
+			input.focus();
+			loadHistory();
+		});
+	</script>
+</body>
+</html>
